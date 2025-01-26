@@ -2,6 +2,7 @@ import random
 import sys
 import os
 import pytest
+import math
 import time
 sys.path.append('/Users/monjit/HeapSort')
 
@@ -117,12 +118,18 @@ def test_new_infinity():
     arr = [float('inf'), 1, 0, 100, 50]
     heapsort(arr)
     assert arr == [0, 1, 50, 100, float('inf')], "Heapsort failed for positive infinity"
-    
-def new_test_division_by_zero():
-    arr = [float('inf'), 5, 3, 7, 1/0]
-    with pytest.raises(ZeroDivisionError):
-        heapsort(arr)
 
+def test_new_nan():
+    arr = [3, 7, float('nan'), 5, 1]
+    heapsort(arr)
+    
+    # Assert that all values except the last one match
+    for i in range(len(arr) - 1):
+        assert arr[i] == [1, 3, 5, 7][i], f"Heapsort failed for NaN values, got {arr}"
+    
+    # Assert that the last element is NaN
+    assert math.isnan(arr[-1]), f"Last element is not NaN, got {arr[-1]}"
+    
 # Mocking memory usage and detecting data leaks
 @pytest.fixture
 def check_memory_leak():

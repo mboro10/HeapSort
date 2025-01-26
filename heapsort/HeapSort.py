@@ -1,21 +1,23 @@
+import math
+
 def heapify(mylist, n, i):
     largest = i  # Initialize largest as root
     left = 2 * i + 1  # Left child
     right = 2 * i + 2  # Right child
 
-    # See if left child of root exists and is greater than root
-    if left < n and mylist[left] > mylist[largest]:
+    # If left child exists and is greater than root, account for NaN handling
+    if left < n and (mylist[left] > mylist[largest] or (math.isnan(mylist[left]) and not math.isnan(mylist[largest]))):
         largest = left
 
-    # See if right child of root exists and is greater than largest so far
-    if right < n and mylist[right] > mylist[largest]:
+    # If right child exists and is greater than largest so far, account for NaN handling
+    if right < n and (mylist[right] > mylist[largest] or (math.isnan(mylist[right]) and not math.isnan(mylist[largest]))):
         largest = right
 
-    # Change root, if needed
+    # Change root if needed
     if largest != i:
         mylist[i], mylist[largest] = mylist[largest], mylist[i]  # Swap
 
-        # Heapify the root.
+        # Heapify the root
         heapify(mylist, n, largest)
 
 
@@ -38,7 +40,7 @@ def printlist(mylist):
 
 if __name__ == "__main__":
     user_input = input("Enter space separated numbers: ")
-    mylist = list(map(int, user_input.split()))
+    mylist = list(map(float, user_input.split()))  # Use float to handle NaN input as well
 
     print("Original list:")
     printlist(mylist)
