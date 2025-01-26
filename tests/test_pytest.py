@@ -1,6 +1,7 @@
 import random
 import sys
 import os
+from hypothesis import given, strategies as st
 import pytest
 import math
 import time
@@ -11,45 +12,37 @@ from heapsort.HeapSort import heapsort, heapify
 def build_heap(arr):
     n = len(arr)
     # Build a maxheap.
-    # Since last parent will be at ((n//2)-1) we can start at that location.
     for i in range(n // 2 - 1, -1, -1):
         heapify(arr, n, i)
 
-# Test for heapify function: should turn an array into a valid max-heap
+# Test for heapify function
 def test_heapify():
     arr = [3, 9, 2, 1, 4, 5]
-    build_heap(arr)  # This will properly build the heap
+    build_heap(arr)
     assert arr == [9, 4, 5, 1, 3, 2], f"Heap construction failed, got {arr}"
 
-    # Test an already valid max-heap
     arr = [9, 4, 5, 1, 3, 2]
-    original_arr = arr[:]  # Make a copy to check for modifications
+    original_arr = arr[:]
     heapify(arr, len(arr), 0)
     assert arr == original_arr, f"Heapify modified an already valid heap, got {arr}"
 
-    # Test on an array that needs heapifying (unsorted)
     arr = [1, 3, 5, 7, 9, 2, 4, 6, 8, 0]
-    build_heap(arr)  # Use build_heap instead of a single heapify call
+    build_heap(arr)
     assert arr[0] == 9, "Heap construction failed to place largest element at root"
 
-# Test for heapsort function: ensures it uses heapify correctly to sort the array
 def test_heapsort():
-    # Test sorting of an unsorted array
     arr = [3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5]
     heapsort(arr)
     assert arr == sorted(arr), f"Heap sort failed, got {arr}"
 
-    # Test sorting of an already sorted array
     arr = [1, 2, 3, 4, 5]
     heapsort(arr)
     assert arr == [1, 2, 3, 4, 5], f"Heap sort failed on sorted array, got {arr}"
 
-    # Test sorting of a reverse sorted array
     arr = [9, 8, 7, 6, 5, 4, 3, 2, 1]
     heapsort(arr)
     assert arr == [1, 2, 3, 4, 5, 6, 7, 8, 9], f"Heap sort failed on reverse sorted array, got {arr}"
 
-# Test for basic cases (single element, sorted, reverse sorted)
 def test_single_element():
     arr = [42]
     heapsort(arr)
@@ -65,43 +58,62 @@ def test_reverse_sorted_array():
     heapsort(arr)
     assert arr == [1, 2, 3, 4, 5], "Failed for reverse sorted array"
 
-# Test for large datasets
 def test_large_dataset():
-    large_data = list(range(10**6, 0, -1))  # A large array in reverse order
+    large_data = list(range(10**6, 0, -1))
     start_time = time.time()
     heapsort(large_data)
     execution_time = time.time() - start_time
     assert large_data == sorted(large_data), "Heap sort failed for large dataset"
     assert execution_time < 5, "Heap sort took too long for large dataset"
 
-# Test for robustness with edge cases
 def test_robustness():
-    # Test with repetitive elements
     repetitive_data = [42] * 10**6
     heapsort(repetitive_data)
     assert repetitive_data == [42] * 10**6
 
-    # Test with mixed data types (should raise a TypeError)
     mixed_data = [42, "string", None]
     with pytest.raises(TypeError):
         heapsort(mixed_data)
 
-# Test for vulnerabilities
 def test_vulnerability():
     malicious_input = [float('inf'), -float('inf'), 0, 42, -42] * 200000
     heapsort(malicious_input)
     assert malicious_input == sorted(malicious_input), "Heap sort failed with extreme values"
 
-# Security check for data modification
 def test_data_integrity():
     original_data = [5, 2, 9, 1, 5, 6]
     input_copy = original_data[:]
     heapsort(original_data)
     assert original_data == sorted(input_copy), "Heap sort altered data incorrectly"
     assert original_data != input_copy, "Heap sort did not sort correctly"
+
+# Hypothesis strategy for lists with special values (NaN, inf)
+@st.composite
+def lists_with_special_values(draw):
+    length = draw(st.integers(min_value=0, max_value=10))  # List length, random between 0 and 10
+    return draw(st.lists(st.floats(allow_nan=True, allow_infinity=True), min_size=length, max_size=length))
+
+@given(lists_with_special_values())
+def test_new_heapsort_random(arr):
+    # Remove NaN values before sorting
+    arr_no_nan = [x for x in arr if not math.isnan(x)]
+
+    # Perform heapSort
+    heapsort(arr_no_nan)
     
-#New Test Checks
-def test_new_floating_point_precision():
+    # Check if the list is sorted correctly
+    for i in range(1, len(arr_no_nan)):
+        assert arr_no_nan[i-1] <= arr_no_nan[i], "The list is not sorted correctly"
+    
+    # Handle the NaN values separately, they should be at the end of the list
+    nan_values = [x for x in arr if math.isnan(x)]
+    
+    # Append NaN values back at the end of the sorted array
+    arr_no_nan.extend(nan_values)
+
+    # Verify NaN values are at the end of the list
+    assert all(math.isnan(x) for x in arr_no_nan[len(arr_no_nan)-len(nan_values):]), "NaN values are not at the end of the list"
+
     arr = [1.111, 3.333, 2.222, 5.555, 4.444]
     heapsort(arr)
     assert arr == [1.111, 2.222, 3.333, 4.444, 5.555], "Heapsort failed for floating point precision"
@@ -127,8 +139,7 @@ def test_new_nan():
         assert arr[i] == [1, 3, 5, 7][i], f"Heapsort failed for NaN values, got {arr}"
     
     assert math.isnan(arr[-1]), f"Last element is not NaN, got {arr[-1]}"
-    
-# Mocking memory usage and detecting data leaks
+
 @pytest.fixture
 def check_memory_leak():
     import tracemalloc
@@ -138,7 +149,6 @@ def check_memory_leak():
     tracemalloc.stop()
     assert peak < 50 * 1024 * 1024, "Memory usage exceeded for sorting large datasets"
 
-# Benchmarking with pytest-benchmark plugin
 @pytest.mark.benchmark
 def test_benchmark(benchmark):
     large_data = list(range(10**6, 0, -1))
