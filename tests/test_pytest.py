@@ -94,6 +94,8 @@ def lists_with_special_values(draw):
     return draw(st.lists(st.floats(allow_nan=True, allow_infinity=True), min_size=length, max_size=length))
 
 @given(lists_with_special_values())
+
+# New Test Cases
 def test_new_heapsort_random(arr):
     arr_no_nan = [x for x in arr if not math.isnan(x)]
     heapsort(arr_no_nan)
@@ -118,6 +120,11 @@ def test_new_large_random_data():
     end_time = time.time()
     assert arr == sorted(arr), "Heapsort failed for large random data"
     assert (end_time - start_time) < 5, "Heapsort performance is below expected threshold"
+    
+def test_new_floating_point_precision():
+    arr = [1.111, 3.333, 2.222, 5.555, 4.444]
+    heapsort(arr)
+    assert arr == [1.111, 2.222, 3.333, 4.444, 5.555], "Heapsort failed for floating point precision"
 
 def test_new_infinity():
     arr = [float('inf'), 1, 0, 100, 50]
