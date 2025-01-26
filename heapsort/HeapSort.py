@@ -1,21 +1,22 @@
 def heapify(mylist, n, i):
-    largest = i  # Start with the root as the largest
-    left = 2 * i + 1  # Left child index
-    right = 2 * i + 2  # Right child index
+    largest = i  # Initialize largest as root
+    left = 2 * i + 1  # Left child
+    right = 2 * i + 2  # Right child
 
-    # If the left child is larger than the root
+    # See if left child of root exists and is greater than root
     if left < n and mylist[left] > mylist[largest]:
         largest = left
 
-    # If the right child is larger than the largest so far
+    # See if right child of root exists and is greater than largest so far
     if right < n and mylist[right] > mylist[largest]:
         largest = right
 
-    # If the largest is not root, swap and continue heapifying
+    # Change root, if needed
     if largest != i:
-        mylist[i], mylist[largest] = mylist[largest], mylist[i]
-        heapify(mylist, n, largest)
+        mylist[i], mylist[largest] = mylist[largest], mylist[i]  # Swap
 
+        # Heapify the root.
+        heapify(mylist, n, largest)
 
 
 def heapsort(mylist):

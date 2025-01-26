@@ -6,12 +6,18 @@ sys.path.append('/Users/monjit/HeapSort')
 
 from heapsort.HeapSort import heapsort, heapify
 
+def build_heap(arr):
+    n = len(arr)
+    # Build a maxheap.
+    # Since last parent will be at ((n//2)-1) we can start at that location.
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(arr, n, i)
+
 # Test for heapify function: should turn an array into a valid max-heap
 def test_heapify():
     arr = [3, 9, 2, 1, 4, 5]
-    heapify(arr, len(arr), 0)  # Start heapify at root (index 0)
-    # After heapifying, the largest element should be at the root (index 0)
-    assert arr == [9, 4, 5, 1, 3, 2], f"Heapify failed, got {arr}"
+    build_heap(arr)  # This will properly build the heap
+    assert arr == [9, 4, 5, 1, 3, 2], f"Heap construction failed, got {arr}"
 
     # Test an already valid max-heap
     arr = [9, 4, 5, 1, 3, 2]
@@ -21,9 +27,8 @@ def test_heapify():
 
     # Test on an array that needs heapifying (unsorted)
     arr = [1, 3, 5, 7, 9, 2, 4, 6, 8, 0]
-    heapify(arr, len(arr), 0)
-    # After heapifying, the array should be a valid max-heap
-    assert arr[0] == 9, "Heapify failed to place largest element at root"
+    build_heap(arr)  # Use build_heap instead of a single heapify call
+    assert arr[0] == 9, "Heap construction failed to place largest element at root"
 
 # Test for heapsort function: ensures it uses heapify correctly to sort the array
 def test_heapsort():
