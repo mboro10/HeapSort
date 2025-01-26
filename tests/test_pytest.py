@@ -95,23 +95,16 @@ def lists_with_special_values(draw):
 
 @given(lists_with_special_values())
 def test_new_heapsort_random(arr):
-    # Remove NaN values before sorting
     arr_no_nan = [x for x in arr if not math.isnan(x)]
-
-    # Perform heapSort
     heapsort(arr_no_nan)
     
-    # Check if the list is sorted correctly
     for i in range(1, len(arr_no_nan)):
         assert arr_no_nan[i-1] <= arr_no_nan[i], "The list is not sorted correctly"
     
-    # Handle the NaN values separately, they should be at the end of the list
     nan_values = [x for x in arr if math.isnan(x)]
     
-    # Append NaN values back at the end of the sorted array
     arr_no_nan.extend(nan_values)
 
-    # Verify NaN values are at the end of the list
     assert all(math.isnan(x) for x in arr_no_nan[len(arr_no_nan)-len(nan_values):]), "NaN values are not at the end of the list"
 
     arr = [1.111, 3.333, 2.222, 5.555, 4.444]
