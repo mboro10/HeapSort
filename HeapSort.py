@@ -14,11 +14,12 @@ def heapify(mylist, n, i):
 def heapsort(mylist):
     n = len(mylist)
     
-    for i in range(n // 2, -1, -1):
+    # Build a max heap
+    for i in range(n // 2, -1, -1): # Heapify from last non-leaf to root
         heapify(mylist, n - 1, i)
     
     for i in range(n - 1, -1, -1):
-        mylist[i], mylist[0] = mylist[0], mylist[i]
+        mylist[i], mylist[0] = mylist[0], mylist[i] # Move current root to end
         heapify(mylist, i - 1, 0)
 
 def printlist(mylist):
