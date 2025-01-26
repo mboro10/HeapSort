@@ -99,6 +99,26 @@ def test_data_integrity():
     assert original_data == sorted(input_copy), "Heap sort altered data incorrectly"
     assert original_data != input_copy, "Heap sort did not sort correctly"
 
+    
+#New Test Checks
+def test_floating_point_precision():
+    arr = [1.111, 3.333, 2.222, 5.555, 4.444]
+    heapsort(arr)
+    assert arr == [1.111, 2.222, 3.333, 4.444, 5.555], "Heapsort failed for floating point precision"
+
+def test_large_random_data():
+    arr = [random.randint(0, 1000000) for _ in range(100000)]
+    start_time = time.time()
+    heapsort(arr)
+    end_time = time.time()
+    assert arr == sorted(arr), "Heapsort failed for large random data"
+    assert (end_time - start_time) < 5, "Heapsort performance is below expected threshold"
+
+def test_infinity():
+    arr = [float('inf'), 1, 0, 100, 50]
+    heapsort(arr)
+    assert arr == [0, 1, 50, 100, float('inf')], "Heapsort failed for positive infinity"
+
 # Mocking memory usage and detecting data leaks
 @pytest.fixture
 def check_memory_leak():
